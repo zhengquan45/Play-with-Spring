@@ -1,5 +1,8 @@
 package org.zhq.custom;
 
+import cn.hutool.json.JSONUtil;
+
+import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,12 +46,12 @@ public class MyDispatcherServlet extends HttpServlet {
         Method method = mappings.get(uri);
         Object controller = controllers.get(method.getDeclaringClass().getName());
 
-        Class[] paramTypes = method.getParameterTypes();
+        Class<?>[] paramTypes = method.getParameterTypes();
         Object[] parameters = new Object[paramTypes.length];
 
         // 参数注入
         for (int i = 0; i < paramTypes.length; ++i) {
-            Class paramType = paramTypes[i];
+            Class<?> paramType = paramTypes[i];
             if (paramType == HttpServletRequest.class) {
                 parameters[i] = req;
             } else if (paramType == HttpServletResponse.class) {
@@ -57,7 +60,12 @@ public class MyDispatcherServlet extends HttpServlet {
                 Annotation[] annosOnParam = method.getParameterAnnotations()[i];
                 for (Annotation annoOnParam : annosOnParam) {
                     if (annoOnParam.annotationType() == MyRequestParam.class) {
-                        parameters[i] = req.getParameter(((MyRequestParam) annoOnParam).value());
+                        parameters[i] = convert(paramType, req.getParameter(((MyRequestParam) annoOnParam).value()));
+                        break;
+                    }
+                    if (annoOnParam.annotationType() == MyRequestBody.class) {
+                        byte[] bytes = binaryReader(req);
+                        parameters[i] = JSONUtil.toBean(new String(bytes),paramType);
                         break;
                     }
                 }
@@ -65,6 +73,18 @@ public class MyDispatcherServlet extends HttpServlet {
         }
         Object result = method.invoke(controller, parameters);
 
+    }
+
+    private Object convert(Class<?> paramType, String parameter) {
+        return ConvertFactory.getConvert(paramType).doConvert(parameter);
+    }
+
+    private byte[] binaryReader(HttpServletRequest request) throws IOException {
+        int len = request.getContentLength();
+        ServletInputStream iii = request.getInputStream();
+        byte[] buffer = new byte[len];
+        iii.read(buffer, 0, len);
+        return buffer;
     }
 
 }

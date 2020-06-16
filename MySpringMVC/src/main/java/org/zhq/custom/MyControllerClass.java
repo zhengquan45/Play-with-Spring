@@ -1,6 +1,7 @@
 package org.zhq.custom;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 
 @MyController
@@ -20,11 +21,22 @@ public class MyControllerClass {
 
 
     @MyRequestMapping("/add")
-    public void add(@MyRequestParam("a")int a,@MyRequestParam("b")int b,HttpServletResponse response){
+    public void add(@MyRequestParam("a")Integer a,@MyRequestParam("b")Integer b,HttpServletResponse response){
         try {
             response.getWriter().write(a+"+"+b+"="+(a+b));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    @MyRequestMapping("/post")
+    public void post(@MyRequestBody Person person, HttpServletResponse response){
+        try {
+            response.getWriter().write(person.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
