@@ -4,7 +4,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 
 @MyController
@@ -51,6 +50,15 @@ public class MyControllerClass {
         mv.getModelMap().put("name", name);
         mv.setViewName("index");
         return mv;
+    }
+
+    @MyRequestMapping("/hello1")
+    @MyResponseBody
+    public String hello1(@MyRequestParam("name") String name,
+                         HttpServletRequest request,
+                         HttpServletResponse response
+    ) {
+        return serviceClass.sayHello(name);
     }
 
 

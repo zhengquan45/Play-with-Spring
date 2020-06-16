@@ -77,7 +77,14 @@ public class MyDispatcherServlet extends HttpServlet {
             }
         }
         Object mv = method.invoke(controller, parameters);
-        if (mv instanceof ModelAndView) {
+        if (method.isAnnotationPresent(MyResponseBody.class)) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(mv);
+            resp.setHeader("Content-Type", "application/json");
+            resp.getOutputStream().print(json);
+            resp.getOutputStream().flush();
+            return;
+        }else if (mv instanceof ModelAndView) {
             File template = new File(getClass().getResource("/view/" + ((ModelAndView) mv).getViewName() + ".mytemplate").toURI());
             String content = new String(Files.readAllBytes(template.toPath()));
             for (Map.Entry<String, Object> entry : ((ModelAndView) mv).getModelMap().entrySet()) {
@@ -87,13 +94,6 @@ public class MyDispatcherServlet extends HttpServlet {
             }
             resp.setHeader("Content-Type", "text/html");
             resp.getOutputStream().print(content);
-            resp.getOutputStream().flush();
-            return;
-        } else if (method.getAnnotation(MyResponseBody.class) != null) {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json = objectMapper.writeValueAsString(mv);
-            resp.setHeader("Content-Type", "application/json");
-            resp.getOutputStream().print(json);
             resp.getOutputStream().flush();
             return;
         }
