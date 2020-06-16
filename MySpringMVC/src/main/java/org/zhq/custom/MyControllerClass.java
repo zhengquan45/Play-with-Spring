@@ -1,5 +1,8 @@
 package org.zhq.custom;
 
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +39,18 @@ public class MyControllerClass {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @MyRequestMapping("/hello")
+    public ModelAndView index(@MyRequestParam("name") String name,
+                              HttpServletRequest request,
+                              HttpServletResponse response
+    ) {
+        ModelAndView mv = new ModelAndView();
+        mv.getModelMap().put("greeting", serviceClass.sayHello(name));
+        mv.getModelMap().put("name", name);
+        mv.setViewName("index");
+        return mv;
     }
 
 
