@@ -8,13 +8,10 @@ import java.util.Map;
 
 public class MySpringApplication {
     public static void main(String[] args) throws IllegalAccessException, IOException, InstantiationException, LifecycleException {
-        Map<Class<?>, Object> container = MySpring.doScanner();
-        MySpringContext context = new MySpringContext(container);
+        MySpringContext context = new MySpringContext();
         try {
             context.init();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
+        } catch (NoSuchMethodException | InvocationTargetException e) {
             e.printStackTrace();
         }
         MyServer.startServer(new MyDispatcherServlet(context));

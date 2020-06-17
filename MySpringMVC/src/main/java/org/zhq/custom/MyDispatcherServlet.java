@@ -41,15 +41,13 @@ public class MyDispatcherServlet extends HttpServlet {
     }
 
     private void doDispatch(HttpServletRequest req, HttpServletResponse resp) throws IOException, InvocationTargetException, IllegalAccessException, URISyntaxException {
-        String uri = req.getRequestURI();
-        Map<String, Method> mappings = mySpringContext.getMappings();
-        Map<String, Object> controllers = mySpringContext.getControllers();
-        if (!mappings.containsKey(uri)) {
+        MyHandler handler = mySpringContext.getHandler(req);
+        if (handler == null) {
             resp.getWriter().write("404 NOT FOUND");
             return;
         }
-        Method method = mappings.get(uri);
-        Object controller = controllers.get(method.getDeclaringClass().getName());
+        Method method = handler.method;
+        Object controller = handler.controller;
 
         Class<?>[] paramTypes = method.getParameterTypes();
         Object[] parameters = new Object[paramTypes.length];
@@ -98,6 +96,7 @@ public class MyDispatcherServlet extends HttpServlet {
             return;
         }
     }
+
 
     private Object convert(Class<?> paramType, String parameter) {
         return ConvertFactory.getConvert(paramType).doConvert(parameter);
